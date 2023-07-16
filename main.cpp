@@ -3,11 +3,12 @@
 #include "imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
 #include <windows.h>
+#include "profilewindow.h"
 
 int main( int argc, char** argv )
 {
-    HWND hWnd = GetConsoleWindow();
-    ShowWindow(hWnd, SW_HIDE);
+    // HWND hWnd = GetConsoleWindow();
+    // ShowWindow(hWnd, SW_HIDE);
 
     if ( !glfwInit() )
         return 1;
@@ -28,6 +29,8 @@ int main( int argc, char** argv )
     ImGui_ImplGlfw_InitForOpenGL( window, true );
     ImGui_ImplOpenGL3_Init(glsl_version);
 
+    ProfileWindow proWin;
+
     while ( !glfwWindowShouldClose( window ) )
     {
         glfwPollEvents();
@@ -36,10 +39,8 @@ int main( int argc, char** argv )
         ImGui_ImplGlfw_NewFrame();
 
         ImGui::NewFrame();
-
-        ImGui::Begin( "你好，世界！" );
-        ImGui::Text( "This is OneFLOW test." );
-        ImGui::End();
+        proWin.Draw();
+        ImGui::ShowDemoWindow();
 
         // Rendering
         ImGui::Render();
