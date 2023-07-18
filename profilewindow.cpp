@@ -1,4 +1,3 @@
-#include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
@@ -39,11 +38,13 @@ void ProfileWindow::ShortcutList(FieldsClass &field)
         ImGui::Text("年龄: %s", it->GetAge());
         ImGui::Text("地域: %s", it->GetArea());
         ImGui::PushID(it->GetName());
+        ImGui::BeginDisabled(isProEdit == ImGuiInputTextFlags_None);
         if(ImGui::Button("详情", ImVec2(-FLT_MIN, 0.0f))) {
             isShowDetailProfile = TRUE;
             shownProfile = it;
             std::cout << it->GetName() << " is clicked" << std::endl;
         }
+        ImGui::EndDisabled();
         ImGui::PopID();
         ImGui::NextColumn();
     }
@@ -54,26 +55,93 @@ void ProfileWindow::ShortcutList(FieldsClass &field)
 void ProfileWindow::ShowDetailProfile()
 {
     ImGui::Begin( "简历详情", &isShowDetailProfile);
+
+    ImGui::BeginDisabled(isProEdit == ImGuiInputTextFlags_None);
+    if(ImGui::Button("编辑")) {
+        isProEdit = ImGuiInputTextFlags_None;
+    };
+    ImGui::EndDisabled();
+    ImGui::SameLine(0, 30);
+    ImGui::BeginDisabled(isProEdit == ImGuiInputTextFlags_ReadOnly);
+    if(ImGui::Button("保存")) {
+        isProEdit = ImGuiInputTextFlags_ReadOnly;
+        shownProfile->SaveData();
+    };
+    ImGui::EndDisabled();
+
+    ImGui::Separator();
+    ImGui::NewLine();
+
     /* Name */
     ImGui::Text("姓名:");
-    ImGui::SameLine(0, 10);
+    ImGui::SameLine(100, 0);
     ImGui::PushID("name");
-    ImGui::InputText("", shownProfile->GetName(), 128);
+    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
+    ImGui::InputText("", shownProfile->GetName(), 128, isProEdit);
     ImGui::PopID();
 
     /* Age */
-    ImGui::Text("年龄:");
-    ImGui::SameLine(0, 10);
+    ImGui::Text("出生年份:");
+    ImGui::SameLine(100, 0);
     ImGui::PushID("age");
-    ImGui::InputText("", shownProfile->GetAge(), 128);
+    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 4);
+    ImGui::InputText("", shownProfile->GetAge(), 128, isProEdit);
     ImGui::PopID();
 
     /* Age */
-    ImGui::Text("地域:");
-    ImGui::SameLine(0, 10);
+    ImGui::Text("工作地:");
+    ImGui::SameLine(100, 0);
     ImGui::PushID("area");
-    ImGui::InputText("", shownProfile->GetArea(), 128);
+    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 4);
+    ImGui::InputText("", shownProfile->GetArea(), 128, isProEdit);
     ImGui::PopID();
+
+    ImGui::SameLine(0, 80);
+    ImGui::Text("家乡:");
+    ImGui::SameLine(0, 10);
+    ImGui::PushID("hometown");
+    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 4);
+    ImGui::InputText("", "-", 128, isProEdit);
+    ImGui::PopID();
+
+    
+    ImGui::Text("学历:");
+    ImGui::SameLine(100, 0);
+    ImGui::PushID("diploma");
+    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 4);
+    ImGui::InputText("", "-", 128, isProEdit);
+    ImGui::PopID();
+
+    ImGui::SameLine(0, 80);
+    ImGui::Text("专业:");
+    ImGui::SameLine(0, 10);
+    ImGui::PushID("major");
+    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
+    ImGui::InputText("", "-", 128, isProEdit);
+    ImGui::PopID();
+
+    ImGui::Text("毕业院校:");
+    ImGui::SameLine(100, 0);
+    ImGui::PushID("college");
+    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
+    ImGui::InputText("", "-", 128, isProEdit);
+    ImGui::PopID();
+
+    ImGui::SameLine(0, 7);
+    ImGui::Text("from");
+    ImGui::SameLine(0, 10);
+    ImGui::PushID("from");
+    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 4);
+    ImGui::InputText("", "-", 32, isProEdit);
+    ImGui::PopID();
+    ImGui::SameLine(0, 10);
+    ImGui::Text("to");
+    ImGui::SameLine(0, 10);
+    ImGui::PushID("to");
+    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 4);
+    ImGui::InputText("", "-", 32, isProEdit);
+    ImGui::PopID();
+
 
     ImGui::End();
 }
@@ -90,11 +158,13 @@ void ProfileWindow::Draw()
         }
     }
     ImGui::EndTabBar();
-    
     ImGui::End();
 
     if(isShowDetailProfile) {
         ShowDetailProfile();
+    } else if (isProEdit == ImGuiInputTextFlags_None) {
+        isProEdit = ImGuiInputTextFlags_ReadOnly;
+        shownProfile->SaveData();
     }
 
 }

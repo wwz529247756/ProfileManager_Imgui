@@ -25,17 +25,8 @@ FieldsClass::FieldsClass(std::string name) : fieldsName(name)
 
 ProfileData* FieldsClass::CreateProfileData(std::string filePath)
 {
-    std::ifstream read_file;
-    ProfileData *proData = new ProfileData(); 
-    read_file.open( fs::u8path(filePath), std::ios::in);
-
-	std::string line;
-    
-	while(std::getline(read_file, line))
-	{
-        std::cout<<"line: "<< line << std::endl;
-        proData->LoadData(line);
-	}
+    ProfileData *proData = new ProfileData(filePath); 
+    proData->LoadData();
     profileList.push_back(proData);
     return nullptr;
 }

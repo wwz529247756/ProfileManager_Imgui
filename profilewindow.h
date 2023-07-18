@@ -2,6 +2,7 @@
 #include <string>
 #include "fieldsclass.h"
 #include <windows.h>
+#include "imgui.h"
 
 class ProfileWindow
 {
@@ -11,6 +12,7 @@ private:
     const std::string PROFILE_PATH = "./profiles";
     bool isShowDetailProfile = FALSE;
     ProfileData  *shownProfile = nullptr;
+    ImGuiInputTextFlags isProEdit = ImGuiInputTextFlags_ReadOnly;
 
     void ShortcutList(FieldsClass &field);
     void ShowDetailProfile();

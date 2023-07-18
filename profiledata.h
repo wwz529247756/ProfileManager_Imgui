@@ -7,10 +7,12 @@ private:
     char mName[128];
     char mAge[128];
     char mArea[128];
+    std::string infoFilePath;
     
 public:
-    ProfileData(){};
-    void LoadData(std::string &data);
+    ProfileData(std::string filePath) : infoFilePath(filePath){};
+    void LoadData();
+    void SaveData();
 
     char* GetName() {
         return mName;
