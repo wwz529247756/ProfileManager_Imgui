@@ -24,7 +24,7 @@ int main( int argc, char** argv )
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
     ImFont *font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msyh.ttc",
-        18.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
+        20.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
     
     ImGui_ImplGlfw_InitForOpenGL( window, true );
     ImGui_ImplOpenGL3_Init(glsl_version);

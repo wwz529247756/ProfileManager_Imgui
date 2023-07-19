@@ -16,6 +16,9 @@ private:
 
     void ShortcutList(FieldsClass &field);
     void ShowDetailProfile();
+    void ShowBasicInfoTab();
+    void ShowContactInfoTab();
+
 
 public:
     ProfileWindow();
