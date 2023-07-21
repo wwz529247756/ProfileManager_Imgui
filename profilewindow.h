@@ -13,12 +13,13 @@ private:
     bool isShowDetailProfile = FALSE;
     ProfileData  *shownProfile = nullptr;
     ImGuiInputTextFlags isProEdit = ImGuiInputTextFlags_ReadOnly;
+    ImFont *titleFont = nullptr;
 
     void ShortcutList(FieldsClass &field);
     void ShowDetailProfile();
     void ShowBasicInfoTab();
     void ShowContactInfoTab();
-
+    void ShowComLog();
 
 public:
     ProfileWindow();

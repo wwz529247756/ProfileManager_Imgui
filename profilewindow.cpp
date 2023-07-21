@@ -10,6 +10,10 @@ namespace fs = std::filesystem;
 
 ProfileWindow::ProfileWindow()
 {
+    ImGuiIO &io = ImGui::GetIO();
+    titleFont = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msyhbd.ttc",
+        32.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
+    
     if (access(PROFILE_PATH.c_str(), 0) == -1) {
         std::cout << "profiles dir does not exist!" << std::endl;
         return;
@@ -33,10 +37,16 @@ void ProfileWindow::ShortcutList(FieldsClass &field)
     ImGui::SetNextItemWidth(fontSize * 8);
     // ImGui::DragInt("##columns_count", &columns_count, 0.1f, 2, 4, "%d columns");
     ImGui::SliderInt("显示列数", &columns_count, 2, 4, "%d", ImGuiSliderFlags_AlwaysClamp);
-    ImGui::SameLine(0,fontSize*6);
-    ImGui::SetNextItemWidth(fontSize * 16);
-    // ImGui::SliderFloat("文字缩放", &io.FontGlobalScale, 0.5f, 1.5f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
-    ImGui::DragFloat("文字缩放", &io.FontGlobalScale, 0.005f, 0.8f, 1.5f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+    
+    ImGui::SameLine(0,fontSize * 2);
+    ImGui::SetNextItemWidth(fontSize * 6);
+    const char* items[] = {"80%", "85%", "90%", "95%", "100%", "105%", "110%", "115%", "120%"};
+    static int itemIndx = 4;
+    ImGui::Combo("文字缩放", &itemIndx, items, IM_ARRAYSIZE(items));
+    io.FontGlobalScale = 1.0f + 0.05f * (float)(itemIndx - 4);
+
+
+    // ImGui::DragFloat("文字缩放", &io.FontGlobalScale, 0.005f, 0.8f, 1.5f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
 
     if (columns_count < 2)
         columns_count = 2;
@@ -45,15 +55,15 @@ void ProfileWindow::ShortcutList(FieldsClass &field)
     {
         if(ImGui::GetColumnIndex() == 0)
             ImGui::Separator();
-        ImGui::Text("姓名: %s", it->GetName());
-        ImGui::Text("年龄: %s", it->GetAge());
-        ImGui::Text("地域: %s", it->GetArea());
-        ImGui::PushID(it->GetName());
+        ImGui::Text("姓名: %s", it->mName);
+        ImGui::Text("出生: %s", it->mBirthDate);
+        ImGui::Text("地域: %s", it->mArea);
+        ImGui::PushID(it->mName);
         ImGui::BeginDisabled(isProEdit == ImGuiInputTextFlags_None);
         if(ImGui::Button("详情", ImVec2(-FLT_MIN, 0.0f))) {
             isShowDetailProfile = TRUE;
             shownProfile = it;
-            std::cout << it->GetName() << " is clicked" << std::endl;
+            std::cout << it->mName << " is clicked" << std::endl;
         }
         ImGui::EndDisabled();
         ImGui::PopID();
@@ -71,35 +81,35 @@ void ProfileWindow::ShowContactInfoTab()
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("phonenum");
     ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
-    ImGui::InputText("", "-", 128, isProEdit);
+    ImGui::InputText("", shownProfile->mPhone, 64, isProEdit);
     ImGui::PopID();
 
     ImGui::Text("微信:");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("wechat");
     ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
-    ImGui::InputText("", "-", 128, isProEdit);
+    ImGui::InputText("", shownProfile->mWechat, 128, isProEdit);
     ImGui::PopID();
 
     ImGui::Text("邮箱:");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("email");
     ImGui::SetNextItemWidth(ImGui::GetFontSize() * 16);
-    ImGui::InputText("", "-", 128, isProEdit);
+    ImGui::InputText("", shownProfile->mEmail, 64, isProEdit);
     ImGui::PopID();
 
     ImGui::Text("LinkedIn:");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("linkedin");
     ImGui::SetNextItemWidth(ImGui::GetFontSize() * 16);
-    ImGui::InputText("", "-", 128, isProEdit);
+    ImGui::InputText("", shownProfile->mLinkedin, 128, isProEdit);
     ImGui::PopID();
 
     ImGui::Text("其他链接");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("otherlink");
     ImGui::SetNextItemWidth(ImGui::GetFontSize() * 16);
-    ImGui::InputText("", "-", 128, isProEdit);
+    ImGui::InputText("", shownProfile->mOtherLink, 128, isProEdit);
     ImGui::PopID();
 }
 
@@ -113,21 +123,21 @@ void ProfileWindow::ShowBasicInfoTab()
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("name");
     ImGui::SetNextItemWidth(fontSize * 8);
-    ImGui::InputText("", shownProfile->GetName(), 128, isProEdit);
+    ImGui::InputText("", shownProfile->mName, 128, isProEdit);
     ImGui::PopID();
 
     ImGui::Text("预估职级:");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("pregrade");
     ImGui::SetNextItemWidth(fontSize * 4);
-    ImGui::InputText("", "-", 128, isProEdit);
+    ImGui::InputText("", shownProfile->mPreGrade, 16, isProEdit);
     ImGui::PopID();
 
     ImGui::Text("公司:");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("company");
     ImGui::SetNextItemWidth(fontSize * 8);
-    ImGui::InputText("", "-", 128, isProEdit);
+    ImGui::InputText("", shownProfile->mCompany, 128, isProEdit);
     ImGui::PopID();
 
     ImGui::SameLine(0, fontSize * 1);
@@ -135,54 +145,56 @@ void ProfileWindow::ShowBasicInfoTab()
     ImGui::SameLine(0, fontSize);
     ImGui::PushID("grade");
     ImGui::SetNextItemWidth(fontSize * 4);
-    ImGui::InputText("", "-", 128, isProEdit);
+    ImGui::InputText("", shownProfile->mCurGrade, 16, isProEdit);
     ImGui::PopID();
 
-    /* Age */
+    /* Born Year */
     ImGui::Text("出生年份:");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("age");
     ImGui::SetNextItemWidth(ImGui::GetFontSize() * 4);
-    ImGui::InputText("", shownProfile->GetAge(), 128, isProEdit);
+    ImGui::InputText("", shownProfile->mBirthDate, 128, isProEdit);
     ImGui::PopID();
 
-    /* Age */
+    /* Working Area */
     ImGui::Text("工作地:");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("area");
     ImGui::SetNextItemWidth(ImGui::GetFontSize() * 4);
-    ImGui::InputText("", shownProfile->GetArea(), 128, isProEdit);
+    ImGui::InputText("", shownProfile->mArea, 128, isProEdit);
     ImGui::PopID();
 
+    /* HomeTown */
     ImGui::SameLine(0, fontSize * 5);
     ImGui::Text("家乡:");
     ImGui::SameLine(0, fontSize);
     ImGui::PushID("hometown");
     ImGui::SetNextItemWidth(fontSize * 8);
-    ImGui::InputText("", "-", 128, isProEdit);
+    ImGui::InputText("", shownProfile->mHometown, 128, isProEdit);
     ImGui::PopID();
 
-    
+    /* Diploma */
     ImGui::Text("学历:");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("diploma");
     ImGui::SetNextItemWidth(ImGui::GetFontSize() * 4);
-    ImGui::InputText("", "-", 128, isProEdit);
+    ImGui::InputText("", shownProfile->mDiploma, 32, isProEdit);
     ImGui::PopID();
 
+    /* Major */
     ImGui::SameLine(0, fontSize * 5);
     ImGui::Text("专业:");
     ImGui::SameLine(0, fontSize);
     ImGui::PushID("major");
     ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
-    ImGui::InputText("", "-", 128, isProEdit);
+    ImGui::InputText("", shownProfile->mMajor, 128, isProEdit);
     ImGui::PopID();
 
     ImGui::Text("毕业院校:");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("college");
     ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
-    ImGui::InputText("", "-", 128, isProEdit);
+    ImGui::InputText("", shownProfile->mCollege, 128, isProEdit);
     ImGui::PopID();
 
     ImGui::SameLine(0, fontSize);
@@ -190,11 +202,18 @@ void ProfileWindow::ShowBasicInfoTab()
     ImGui::SameLine(0, fontSize);
     ImGui::PushID("graddate");
     ImGui::SetNextItemWidth(ImGui::GetFontSize() * 4);
-    ImGui::InputText("", "-", 128, isProEdit);
+    ImGui::InputText("", shownProfile->mGradDate, 32, isProEdit);
     ImGui::PopID();
 
     ImGui::Text("经历:");
-    ImGui::InputTextMultiline("career", "-", 4, ImVec2(-FLT_MIN, fontSize * 8), isProEdit);
+    ImGui::InputTextMultiline("experience", shownProfile->mExperience, 2048, ImVec2(-FLT_MIN, fontSize * 8), isProEdit);
+}
+
+void ProfileWindow::ShowComLog()
+{
+    ImGui::Text("沟通记录:");
+    ImGui::InputTextMultiline("communication", shownProfile->mLog, 2048,
+        ImVec2(-FLT_MIN, ImGui::GetFontSize() * 16), isProEdit);
 }
 
 void ProfileWindow::ShowDetailProfile()
@@ -202,21 +221,33 @@ void ProfileWindow::ShowDetailProfile()
     ImGui::Begin( "简历详情", &isShowDetailProfile);
 
     float fontSize = ImGui::GetFontSize();
-    ImGui::BeginDisabled(isProEdit == ImGuiInputTextFlags_None);
-    if(ImGui::Button("编辑", ImVec2(fontSize * 4, 0))) {
-        isProEdit = ImGuiInputTextFlags_None;
-    };
-    ImGui::EndDisabled();
-    ImGui::SameLine(0, fontSize);
-    ImGui::BeginDisabled(isProEdit == ImGuiInputTextFlags_ReadOnly);
-    if(ImGui::Button("保存", ImVec2(fontSize * 4, 0))) {
-        isProEdit = ImGuiInputTextFlags_ReadOnly;
-        shownProfile->SaveData();
-    };
-    ImGui::EndDisabled();
+    if(isProEdit == ImGuiInputTextFlags_ReadOnly) {
+        if(ImGui::Button("编辑", ImVec2(fontSize * 4, 0))) {
+            isProEdit = ImGuiInputTextFlags_None;
+        };
+    } else if (isProEdit == ImGuiInputTextFlags_None) {
+        if(ImGui::IsKeyPressed(ImGuiKey_LeftCtrl, true) && ImGui::IsKeyPressed(ImGuiKey_S, true))
+        {
+            isProEdit = ImGuiInputTextFlags_ReadOnly;
+            shownProfile->SaveData();
+        }
+        if(ImGui::Button("保存", ImVec2(fontSize * 4, 0))) {
+            isProEdit = ImGuiInputTextFlags_ReadOnly;
+            shownProfile->SaveData();
+        };
+
+        ImGui::SameLine(0, fontSize);
+        if(ImGui::Button("取消", ImVec2(fontSize * 4, 0))) {
+            isProEdit = ImGuiInputTextFlags_ReadOnly;
+            shownProfile->LoadData();
+        };
+    }
 
     ImGui::Separator();
-    ImGui::NewLine();
+
+    ImGui::PushFont(titleFont);
+    ImGui::TextDisabled(shownProfile->mName);
+    ImGui::PopFont();
     
     ImGui::BeginTabBar("ProfileDetail");
     if (ImGui::BeginTabItem("基础信息")) {
@@ -228,7 +259,7 @@ void ProfileWindow::ShowDetailProfile()
         ImGui::EndTabItem();
     }
     if (ImGui::BeginTabItem("沟通记录")) {
-        // TODO Here
+        ShowComLog();
         ImGui::EndTabItem();
     }
     if (ImGui::BeginTabItem("文件浏览")) {

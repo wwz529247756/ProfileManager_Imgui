@@ -23,6 +23,10 @@ ProfileData::ProfileData(std::string filePath) : infoFilePath(filePath)
     dataMap["phone"] = mPhone;
     dataMap["email"] = mEmail;
     dataMap["linkedin"] = mLinkedin;
+    dataMap["curgrade"] = mCurGrade;
+    dataMap["otherlink"] = mOtherLink;
+    dataMap["experience"] = mExperience;
+     dataMap["log"] = mLog;
 }
 
 void ProfileData::LoadData()
@@ -31,6 +35,7 @@ void ProfileData::LoadData()
     std::ifstream read_file;
     read_file.open( fs::u8path(infoFilePath), std::ios::in);
     std::string line;
+    bool isMultiText = false;
     
 	while(std::getline(read_file, line))
 	{
@@ -39,6 +44,9 @@ void ProfileData::LoadData()
 
         std::string tagStr = line.substr(0, pos);
         std::string dataStr = line.substr(pos + 1, line.length());
+        if (tagStr.compare("experience") == 0 || tagStr.compare("log") == 0) {
+            DecodeMultiText(dataStr);
+        }
 
         if (dataMap.find(tagStr) != dataMap.end()) {
             strcpy(dataMap[tagStr],  dataStr.c_str());
@@ -46,13 +54,38 @@ void ProfileData::LoadData()
 	}
 }
 
+void ProfileData::DecodeMultiText(std::string &multiText)
+{
+    for (int i = 0; i < multiText.length(); i++) {
+        if (multiText[i] == '\\' && multiText[i+1] == 'n') {
+            multiText[i] = '\n';
+            multiText.erase(i+1, 1);
+        }
+    }
+}
+
+std::string ProfileData::EncodeMultiText(char *multiText)
+{
+    std::string multiTextStr = std::string(multiText);
+    for (int i = 0; i < multiTextStr.length(); i++) {
+        if (multiTextStr[i] == '\n') {
+            multiTextStr[i] = '\\';
+            multiTextStr.insert(i + 1, 1, 'n');
+        }
+    }
+    return multiTextStr;
+}
+
 void ProfileData::SaveData()
 {
     std::ofstream writeFile;
-    std::cout << "write file to " << infoFilePath << std::endl; 
     writeFile.open(fs::u8path(infoFilePath), std::ios::out);
     // write all data to the file.
     for (auto &it : dataMap) {
+        if (it.first.compare("experience") == 0 || it.first.compare("log") == 0) {
+            writeFile << it.first << ":" << EncodeMultiText(it.second) << "\n";
+            continue;
+        }
         writeFile << it.first << ":" << it.second << "\n";
     }
     writeFile.close();
