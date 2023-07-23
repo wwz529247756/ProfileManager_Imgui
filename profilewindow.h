@@ -14,12 +14,14 @@ private:
     ProfileData  *shownProfile = nullptr;
     ImGuiInputTextFlags isProEdit = ImGuiInputTextFlags_ReadOnly;
     ImFont *titleFont = nullptr;
+    ImFont *shortCutTitleFont = nullptr;
 
     void ShortcutList(FieldsClass &field);
     void ShowDetailProfile();
     void ShowBasicInfoTab();
     void ShowContactInfoTab();
     void ShowComLog();
+    void ShowFileBrowser();
 
 public:
     ProfileWindow();

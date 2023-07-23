@@ -3,10 +3,11 @@
 #include <string.h>
 #include <fstream>
 #include <filesystem>
+#include <windows.h>
 
 namespace fs = std::filesystem;
 
-ProfileData::ProfileData(std::string filePath) : infoFilePath(filePath)
+ProfileData::ProfileData(std::string dirPath) : proDirPath(dirPath)
 {
     dataMap["name"] = mName;
     dataMap["birthdate"] = mBirthDate;
@@ -26,13 +27,15 @@ ProfileData::ProfileData(std::string filePath) : infoFilePath(filePath)
     dataMap["curgrade"] = mCurGrade;
     dataMap["otherlink"] = mOtherLink;
     dataMap["experience"] = mExperience;
-     dataMap["log"] = mLog;
+    dataMap["log"] = mLog;
+    dataMap["status"] = mStatus;
 }
 
 void ProfileData::LoadData()
 {
 
     std::ifstream read_file;
+    std::string infoFilePath = proDirPath + infoFileName;
     read_file.open( fs::u8path(infoFilePath), std::ios::in);
     std::string line;
     bool isMultiText = false;
@@ -52,6 +55,54 @@ void ProfileData::LoadData()
             strcpy(dataMap[tagStr],  dataStr.c_str());
         }
 	}
+    read_file.close();
+
+    LoadFileList();
+
+    if (strlen(dataMap["status"]) > 0 ) {
+        int tmpStatus = atoi(dataMap["status"]);
+        if (tmpStatus >= 0 && tmpStatus < 6) {
+            flowStatus = tmpStatus;
+            return;
+        }
+    }
+    flowStatus = 0;
+
+}
+
+void ProfileData::LoadFileList()
+{
+    std::vector<std::string> dirPath;
+    fileList.clear();
+    for (auto &p : fs::directory_iterator(proDirPath)) {
+        fileList.push_back(p.path().filename().string());
+    }
+}
+
+void ProfileData::OpenFile(int fileIdx) {
+    std::string dirPath = proDirPath;
+
+    for (int i = 0; i < dirPath.length(); i++ ) {
+        if (dirPath[i] == '/') {
+            dirPath[i] = '\\';
+            dirPath.insert(i + 1, 1, '\\');
+        }
+    }
+    dirPath = dirPath + "\\\\" + fileList[fileIdx];
+    ShellExecuteW(0, L"open", fs::u8path(dirPath).wstring().c_str(), L"", L"", SW_SHOWNORMAL);
+}
+
+void ProfileData::OpenProfileDir() {
+
+    std::string dirPath = proDirPath;
+
+    for (int i = 0; i < dirPath.length(); i++ ) {
+        if (dirPath[i] == '/') {
+            dirPath[i] = '\\';
+            dirPath.insert(i + 1, 1, '\\');
+        }
+    }
+    ShellExecuteW(0, L"open", fs::u8path(dirPath).wstring().c_str(), L"", L"", SW_SHOWNORMAL);
 }
 
 void ProfileData::DecodeMultiText(std::string &multiText)
@@ -79,6 +130,7 @@ std::string ProfileData::EncodeMultiText(char *multiText)
 void ProfileData::SaveData()
 {
     std::ofstream writeFile;
+    std::string infoFilePath = proDirPath + infoFileName;
     writeFile.open(fs::u8path(infoFilePath), std::ios::out);
     // write all data to the file.
     for (auto &it : dataMap) {

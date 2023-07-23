@@ -1,19 +1,37 @@
 #include <string>
 #include <map>
+#include <vector>
 
 class ProfileData
 {
 
 private:
-    std::string infoFilePath;
+    std::string proDirPath;
+    const char *infoFileName = "/candidate.info";
     std::map<std::string, char*> dataMap;
+    int flowStatus = 0;
+
     std::string EncodeMultiText(char *multiText);
     void DecodeMultiText(std::string &multiText);
     
+    
 public:
-    ProfileData(std::string filePath);;
+    ProfileData(std::string dirPath);
     void LoadData();
     void SaveData();
+    void LoadFileList();
+    void OpenFile(int fileIdx);
+    void OpenProfileDir();
+
+    int GetStatus() {
+        return flowStatus;
+    }
+
+    void SetStatus(int status) {
+        flowStatus = status;
+        mStatus[0] = status + '0';
+        mStatus[1] = '\0';
+    }
 
     char mName[128] = {0};
     char mBirthDate[32] = {0};
@@ -34,5 +52,8 @@ public:
     char mCurGrade[16] = {0};
     char mExperience[2048] = {0};
     char mLog[2048] = {0};
+    char mStatus[4] = {0};
+
+    std::vector<std::string> fileList;
 
 };

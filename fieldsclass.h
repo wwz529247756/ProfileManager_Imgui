@@ -6,7 +6,6 @@ class FieldsClass
 {
 private:
     std::string fieldsName;
-    // std::vector<ProfileData*> profileList;
     const std::string PROFILE_PATH = "./profiles";
 
     ProfileData* CreateProfileData(std::string filePath);

@@ -13,7 +13,7 @@ FieldsClass::FieldsClass(std::string name) : fieldsName(name)
     std::vector<std::string> dirPath;
     for (auto &p : fs::directory_iterator(fieldPath)) {
         if (fs::is_directory(p.path()) && fs::is_regular_file(fieldPath + "/" + p.path().filename().string() + "/candidate.info")) {
-            dirPath.push_back(fieldPath + "/" + p.path().filename().string() + "/candidate.info");
+            dirPath.push_back(fieldPath + "/" + p.path().filename().string());
         }
     }
 

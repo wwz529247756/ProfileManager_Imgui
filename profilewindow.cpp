@@ -6,6 +6,8 @@
 #include <io.h>
 #include <filesystem>
 
+#define    FONT_SCALE_100     4
+
 namespace fs = std::filesystem;
 
 ProfileWindow::ProfileWindow()
@@ -13,6 +15,8 @@ ProfileWindow::ProfileWindow()
     ImGuiIO &io = ImGui::GetIO();
     titleFont = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msyhbd.ttc",
         32.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
+    shortCutTitleFont = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msyhbd.ttc",
+        24.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
     
     if (access(PROFILE_PATH.c_str(), 0) == -1) {
         std::cout << "profiles dir does not exist!" << std::endl;
@@ -33,29 +37,25 @@ void ProfileWindow::ShortcutList(FieldsClass &field)
     ImGuiIO& io = ImGui::GetIO();
     float fontSize = ImGui::GetFontSize();
 
-
-    ImGui::SetNextItemWidth(fontSize * 8);
-    // ImGui::DragInt("##columns_count", &columns_count, 0.1f, 2, 4, "%d columns");
+    ImGui::SetNextItemWidth(fontSize * 4);
     ImGui::SliderInt("显示列数", &columns_count, 2, 4, "%d", ImGuiSliderFlags_AlwaysClamp);
     
     ImGui::SameLine(0,fontSize * 2);
-    ImGui::SetNextItemWidth(fontSize * 6);
+    ImGui::SetNextItemWidth(fontSize * 4);
     const char* items[] = {"80%", "85%", "90%", "95%", "100%", "105%", "110%", "115%", "120%"};
-    static int itemIndx = 4;
+    static int itemIndx = FONT_SCALE_100;
     ImGui::Combo("文字缩放", &itemIndx, items, IM_ARRAYSIZE(items));
-    io.FontGlobalScale = 1.0f + 0.05f * (float)(itemIndx - 4);
+    io.FontGlobalScale = 1.0f + 0.05f * (float)(itemIndx - FONT_SCALE_100);
 
-
-    // ImGui::DragFloat("文字缩放", &io.FontGlobalScale, 0.005f, 0.8f, 1.5f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
-
-    if (columns_count < 2)
-        columns_count = 2;
     ImGui::Columns(columns_count, NULL, TRUE);
     for (auto it : field.profileList)
     {
-        if(ImGui::GetColumnIndex() == 0)
+        if(ImGui::GetColumnIndex() == 0) {
             ImGui::Separator();
-        ImGui::Text("姓名: %s", it->mName);
+        }
+        ImGui::PushFont(shortCutTitleFont);
+        ImGui::Text("%s", it->mName);
+        ImGui::PopFont();
         ImGui::Text("出生: %s", it->mBirthDate);
         ImGui::Text("地域: %s", it->mArea);
         ImGui::PushID(it->mName);
@@ -63,7 +63,6 @@ void ProfileWindow::ShortcutList(FieldsClass &field)
         if(ImGui::Button("详情", ImVec2(-FLT_MIN, 0.0f))) {
             isShowDetailProfile = TRUE;
             shownProfile = it;
-            std::cout << it->mName << " is clicked" << std::endl;
         }
         ImGui::EndDisabled();
         ImGui::PopID();
@@ -216,6 +215,48 @@ void ProfileWindow::ShowComLog()
         ImVec2(-FLT_MIN, ImGui::GetFontSize() * 16), isProEdit);
 }
 
+void ProfileWindow::ShowFileBrowser()
+{
+    float fontSize = ImGui::GetFontSize();
+    ImGui::NewLine();
+    if(ImGui::Button("打开文件夹", ImVec2(fontSize * 5, 0))) {
+        shownProfile->OpenProfileDir();
+    }
+    ImGui::SameLine(0, fontSize);
+    if(ImGui::Button("刷新", ImVec2(fontSize * 4, 0))) {
+        shownProfile->LoadFileList();
+    }
+    
+    ImGui::BeginTable("FileBrowser", 1,
+        ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_BordersOuterV);
+    ImGui::TableSetupColumn("文件列表");
+    ImGui::TableHeadersRow();
+    for (int i = 0; i < shownProfile->fileList.size(); i++) {
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted(shownProfile->fileList[i].c_str());
+        ImGui::SameLine(fontSize * 20, 0);
+        ImGui::PushID(i);
+        if(ImGui::Button("打开")) {
+            std::cout << "clicked index " << i << std::endl;
+            shownProfile->OpenFile(i);
+        }
+        ImGui::PopID();
+        // ImGui::TableSetColumnIndex(1);
+        // char buf[32] = "hello";
+        // ImGui::TextUnformatted(buf);
+        // for (int column = 0; column < 2; column++)
+        // {
+        //     ImGui::TableSetColumnIndex(column);
+        //     char buf[32];
+        //     sprintf(buf, "Hello");
+        //     ImGui::TextUnformatted(buf);
+            
+        // }
+    }
+    ImGui::EndTable();
+}
+
 void ProfileWindow::ShowDetailProfile()
 {
     ImGui::Begin( "简历详情", &isShowDetailProfile);
@@ -226,7 +267,7 @@ void ProfileWindow::ShowDetailProfile()
             isProEdit = ImGuiInputTextFlags_None;
         };
     } else if (isProEdit == ImGuiInputTextFlags_None) {
-        if(ImGui::IsKeyPressed(ImGuiKey_LeftCtrl, true) && ImGui::IsKeyPressed(ImGuiKey_S, true))
+        if(ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyDown(ImGuiKey_S))
         {
             isProEdit = ImGuiInputTextFlags_ReadOnly;
             shownProfile->SaveData();
@@ -244,10 +285,22 @@ void ProfileWindow::ShowDetailProfile()
     }
 
     ImGui::Separator();
-
+    ImGui::Dummy(ImVec2(fontSize * 2 , 0));
     ImGui::PushFont(titleFont);
     ImGui::TextDisabled(shownProfile->mName);
     ImGui::PopFont();
+
+    ImGui::SameLine(0, fontSize * 5);
+    ImGui::SetNextItemWidth(fontSize * 6);
+    ImGui::BeginDisabled(isProEdit == ImGuiInputTextFlags_ReadOnly);
+    const char* items[] = {"待建联", "交流中", "面试中", "Offer审批中", "暂缓", "终止"};
+    int statusIdx = shownProfile->GetStatus();
+    if(ImGui::Combo(" ", &statusIdx, items, IM_ARRAYSIZE(items))) {
+        shownProfile->SetStatus(statusIdx);
+    }
+    ImGui::EndDisabled();
+    ImGui::Dummy(ImVec2(fontSize * 2 , 0));
+    
     
     ImGui::BeginTabBar("ProfileDetail");
     if (ImGui::BeginTabItem("基础信息")) {
@@ -263,13 +316,14 @@ void ProfileWindow::ShowDetailProfile()
         ImGui::EndTabItem();
     }
     if (ImGui::BeginTabItem("文件浏览")) {
-        // TODO Here
+        ShowFileBrowser();
         ImGui::EndTabItem();
     }
     ImGui::EndTabBar();
 
     ImGui::End();
 }
+
 
 void ProfileWindow::Draw()
 {
@@ -280,13 +334,13 @@ void ProfileWindow::Draw()
     style.WindowPadding = ImVec2(10, 15);
 
     ImGui::Begin( "简历列表", nullptr, ImGuiWindowFlags_NoCollapse);
-    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
+    // ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
     ImGui::BeginTabBar("FieldsTab");
     for (auto it : fields) {
         if (ImGui::BeginTabItem(it->GetName().c_str())) {
             ShortcutList(*it);
             ImGui::EndTabItem();
-        }
+        } 
     }
     ImGui::EndTabBar();
     ImGui::End();
@@ -298,4 +352,6 @@ void ProfileWindow::Draw()
         shownProfile->SaveData();
     }
 
+
 }
+
