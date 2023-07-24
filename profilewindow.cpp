@@ -31,12 +31,54 @@ ProfileWindow::ProfileWindow()
 
 }
 
+void ProfileWindow::ShowAddNewProfile()
+{
+    float fontSize = ImGui::GetFontSize();
+
+    ImGui::Begin("新建简历", nullptr, ImGuiWindowFlags_NoCollapse);
+    ImGui::Text("请输入候选人姓名:");
+    ImGui::SameLine(0, fontSize);
+    ImGui::PushID("newprofile");
+    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
+    ImGui::InputText("", newName, 128);
+    ImGui::PopID();
+    static bool isShowErroMsg = FALSE;
+    if (ImGui::Button("确认", ImVec2(fontSize * 2, 0))) {
+        std::string dirName = newName;
+        ProfileData *newProfile = creatingField->AddNewProfile(dirName);
+        if (newProfile != nullptr) {
+            shownProfile = newProfile;
+            isShowDetailProfile = TRUE;
+            isShowCreateProfile = FALSE;
+        } else {
+            isShowErroMsg = TRUE;
+        }
+    }
+    ImGui::SameLine(0, fontSize);
+    if (ImGui::Button("取消", ImVec2(fontSize * 2, 0))) {
+        isShowCreateProfile = FALSE;
+    }
+    if (isShowErroMsg) {
+        ImGui::TextDisabled("请检查候选人姓名是否重复！");
+    }
+    ImGui::End();
+}
+
 void ProfileWindow::ShortcutList(FieldsClass &field)
 {
     static int columns_count = 3;
     ImGuiIO& io = ImGui::GetIO();
     float fontSize = ImGui::GetFontSize();
 
+    ImGui::BeginDisabled(isProEdit == ImGuiInputTextFlags_None);
+    if (ImGui::Button("新建", ImVec2(fontSize * 3, 0))) {
+        memset(newName, 0, sizeof(newName));
+        isShowCreateProfile = TRUE;
+        creatingField = &field;
+    }
+    ImGui::EndDisabled();
+
+    ImGui::SameLine(0,fontSize * 2);
     ImGui::SetNextItemWidth(fontSize * 4);
     ImGui::SliderInt("显示列数", &columns_count, 2, 4, "%d", ImGuiSliderFlags_AlwaysClamp);
     
@@ -242,17 +284,6 @@ void ProfileWindow::ShowFileBrowser()
             shownProfile->OpenFile(i);
         }
         ImGui::PopID();
-        // ImGui::TableSetColumnIndex(1);
-        // char buf[32] = "hello";
-        // ImGui::TextUnformatted(buf);
-        // for (int column = 0; column < 2; column++)
-        // {
-        //     ImGui::TableSetColumnIndex(column);
-        //     char buf[32];
-        //     sprintf(buf, "Hello");
-        //     ImGui::TextUnformatted(buf);
-            
-        // }
     }
     ImGui::EndTable();
 }
@@ -344,6 +375,10 @@ void ProfileWindow::Draw()
     }
     ImGui::EndTabBar();
     ImGui::End();
+
+    if (isShowCreateProfile) {
+        ShowAddNewProfile();
+    }
 
     if(isShowDetailProfile) {
         ShowDetailProfile();

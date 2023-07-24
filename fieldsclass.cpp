@@ -23,10 +23,26 @@ FieldsClass::FieldsClass(std::string name) : fieldsName(name)
     }
 }
 
-ProfileData* FieldsClass::CreateProfileData(std::string filePath)
+ProfileData *FieldsClass::AddNewProfile(std::string &dirName)
+{
+    std::string newDirPath = PROFILE_PATH + "/" + fieldsName + "/" + dirName;
+    if(!fs::create_directories(fs::path(newDirPath))) {
+        std::cout << "[AddNewProfile] new dir failed" << std::endl;
+        return nullptr;
+    }
+
+    ProfileData *proData = new ProfileData(newDirPath);
+    strcpy(proData->mName, dirName.c_str());
+    proData->SaveData();
+    profileList.push_back(proData);
+    proData->LoadData();
+
+    return proData;
+}
+
+void FieldsClass::CreateProfileData(std::string filePath)
 {
     ProfileData *proData = new ProfileData(filePath); 
     proData->LoadData();
     profileList.push_back(proData);
-    return nullptr;
 }
