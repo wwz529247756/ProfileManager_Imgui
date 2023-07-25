@@ -16,7 +16,6 @@ private:
     ProfileData  *shownProfile = nullptr;
     ImGuiInputTextFlags isProEdit = ImGuiInputTextFlags_ReadOnly;
     ImFont *titleFont = nullptr;
-    ImFont *shortCutTitleFont = nullptr;
     char newName[128] = {0};
 
     void ShortcutList(FieldsClass &field);

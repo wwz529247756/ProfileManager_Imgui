@@ -13,10 +13,12 @@ namespace fs = std::filesystem;
 ProfileWindow::ProfileWindow()
 {
     ImGuiIO &io = ImGui::GetIO();
+    static ImFontConfig cfg;
+    cfg.OversampleH = 1;
     titleFont = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msyhbd.ttc",
-        32.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
-    shortCutTitleFont = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msyhbd.ttc",
-        24.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
+        28.0f, &cfg, io.Fonts->GetGlyphRangesChineseFull());
+    io.Fonts->TexDesiredWidth = 8096;
+    io.Fonts->Build();
     
     if (access(PROFILE_PATH.c_str(), 0) == -1) {
         std::cout << "profiles dir does not exist!" << std::endl;
@@ -95,7 +97,7 @@ void ProfileWindow::ShortcutList(FieldsClass &field)
         if(ImGui::GetColumnIndex() == 0) {
             ImGui::Separator();
         }
-        ImGui::PushFont(shortCutTitleFont);
+        ImGui::PushFont(titleFont);
         ImGui::Text("%s", it->mName);
         ImGui::PopFont();
         ImGui::Text("出生: %s", it->mBirthDate);

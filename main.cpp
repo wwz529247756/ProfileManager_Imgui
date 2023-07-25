@@ -62,6 +62,8 @@ int main( int argc, char** argv )
 
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
+    ImFontConfig cfg;
+    cfg.OversampleH = 1;
     ImFont *font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msyh.ttc",
         20.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
     
