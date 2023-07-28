@@ -54,7 +54,8 @@ int main( int argc, char** argv )
 
     const char * glsl_version = "#version 130";
 
-    GLFWwindow * window = glfwCreateWindow(1280, 720, "简历本地管理", NULL, NULL);
+    GLFWwindow * window = glfwCreateWindow(1920, 1080, "简历本地管理", NULL, NULL);
+    glfwSetWindowAttrib(window, GLFW_RESIZABLE, false);
     if ( window == NULL )
         return 1;
     glfwMakeContextCurrent( window );

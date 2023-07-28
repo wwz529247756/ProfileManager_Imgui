@@ -72,15 +72,17 @@ void ProfileWindow::ShortcutList(FieldsClass &field)
     ImGuiIO& io = ImGui::GetIO();
     float fontSize = ImGui::GetFontSize();
 
-    ImGui::BeginDisabled(isProEdit == ImGuiInputTextFlags_None);
-    if (ImGui::Button("新建", ImVec2(fontSize * 3, 0))) {
-        memset(newName, 0, sizeof(newName));
-        isShowCreateProfile = TRUE;
-        creatingField = &field;
+    if (!field.isSearchingField) {
+        ImGui::BeginDisabled(isProEdit == ImGuiInputTextFlags_None);
+        if (ImGui::Button("新建", ImVec2(fontSize * 3, 0))) {
+            memset(newName, 0, sizeof(newName));
+            isShowCreateProfile = TRUE;
+            creatingField = &field;
+        }
+        ImGui::EndDisabled();
+        ImGui::SameLine(0,fontSize * 2);
     }
-    ImGui::EndDisabled();
 
-    ImGui::SameLine(0,fontSize * 2);
     ImGui::SetNextItemWidth(fontSize * 4);
     ImGui::SliderInt("显示列数", &columns_count, 2, 4, "%d", ImGuiSliderFlags_AlwaysClamp);
     
@@ -357,6 +359,24 @@ void ProfileWindow::ShowDetailProfile()
     ImGui::End();
 }
 
+void ProfileWindow::ShowSearchingTab()
+{
+    if (ImGui::BeginTabItem("搜索结果", nullptr, needToShowResult | ImGuiTabItemFlags_Trailing)) {
+        ShortcutList(searchingField);
+        ImGui::EndTabItem();
+    } 
+}
+
+void DoSearch(FieldsClass &searchField, std::vector<FieldsClass*> &fields, char *targStr) {
+    searchField.profileList.clear();
+    for (auto &it : fields) {
+        for (auto &sit : it->profileList) {
+            if (strstr(sit->mName, targStr) != nullptr) {
+                searchField.profileList.push_back(sit);
+            }
+        }
+    }
+}
 
 void ProfileWindow::Draw()
 {
@@ -365,16 +385,32 @@ void ProfileWindow::Draw()
     style.ItemSpacing = ImVec2(6, 10);
     style.FrameRounding = 4.0f;
     style.WindowPadding = ImVec2(10, 15);
+    float fontSize = ImGui::GetFontSize();
 
     ImGui::Begin( "简历列表", nullptr, ImGuiWindowFlags_NoCollapse);
-    // ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
+    ImGui::PushID("搜索条");
+    ImGui::InputText("", searchInput, 128);
+    ImGui::PopID();
+    ImGui::SameLine(0, fontSize);
+    bool isClicked = false;
+    if (ImGui::Button("搜索", ImVec2(fontSize * 4, 0))) {
+        // TODO searching
+        DoSearch(searchingField, fields, searchInput);
+        isClicked = true;
+    };
+
     ImGui::BeginTabBar("FieldsTab");
     for (auto it : fields) {
         if (ImGui::BeginTabItem(it->GetName().c_str())) {
             ShortcutList(*it);
+            needToShowResult = ImGuiTabItemFlags_None;
             ImGui::EndTabItem();
         } 
     }
+    if (isClicked) {
+        needToShowResult = ImGuiTabItemFlags_SetSelected;
+    }
+    ShowSearchingTab();
     ImGui::EndTabBar();
     ImGui::End();
 
@@ -388,7 +424,6 @@ void ProfileWindow::Draw()
         isProEdit = ImGuiInputTextFlags_ReadOnly;
         shownProfile->SaveData();
     }
-
 
 }
 
