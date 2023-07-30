@@ -7,25 +7,26 @@
 
 namespace fs = std::filesystem;
 
+const static char configFileName[] = "/candidate.info";
+const static std::string profilePathName = "./profiles";
+
 FieldsClass::FieldsClass(std::string name) : fieldsName(name)
 {
-    std::string fieldPath = PROFILE_PATH + "/" + fieldsName;
-    std::vector<std::string> dirPath;
+    std::string fieldPath = profilePathName + "/" + fieldsName;
+    std::string dirPathName;
     for (auto &p : fs::directory_iterator(fieldPath)) {
-        if (fs::is_directory(p.path()) && fs::is_regular_file(fieldPath + "/" + p.path().filename().string() + "/candidate.info")) {
-            dirPath.push_back(fieldPath + "/" + p.path().filename().string());
+        dirPathName = fieldPath + "/" + p.path().filename().string();
+        if (fs::is_directory(p.path()) && fs::is_regular_file(dirPathName + configFileName)) {
+            ProfileData *proData = new ProfileData(fieldPath + "/" + p.path().filename().string()); 
+            proData->LoadData();
+            profileList.push_back(proData);
         }
-    }
-
-    for (auto it : dirPath) {
-        CreateProfileData(it);
-        // std::cout << it.c_str() << std::endl;
     }
 }
 
-ProfileData *FieldsClass::AddNewProfile(std::string &dirName)
+ProfileData *FieldsClass::CreateNewProfile(std::string &dirName)
 {
-    std::string newDirPath = PROFILE_PATH + "/" + fieldsName + "/" + dirName;
+    std::string newDirPath = profilePathName + "/" + fieldsName + "/" + dirName;
     if(!fs::create_directories(fs::path(newDirPath))) {
         std::cout << "[AddNewProfile] new dir failed" << std::endl;
         return nullptr;
@@ -38,11 +39,4 @@ ProfileData *FieldsClass::AddNewProfile(std::string &dirName)
     proData->LoadData();
 
     return proData;
-}
-
-void FieldsClass::CreateProfileData(std::string filePath)
-{
-    ProfileData *proData = new ProfileData(filePath); 
-    proData->LoadData();
-    profileList.push_back(proData);
 }

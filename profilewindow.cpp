@@ -35,19 +35,17 @@ ProfileWindow::ProfileWindow()
 
 void ProfileWindow::ShowAddNewProfile()
 {
-    float fontSize = ImGui::GetFontSize();
-
     ImGui::Begin("新建简历", nullptr, ImGuiWindowFlags_NoCollapse);
     ImGui::Text("请输入候选人姓名:");
     ImGui::SameLine(0, fontSize);
     ImGui::PushID("newprofile");
-    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
+    ImGui::SetNextItemWidth(fontSize * 8);
     ImGui::InputText("", newName, 128);
     ImGui::PopID();
     static bool isShowErroMsg = FALSE;
     if (ImGui::Button("确认", ImVec2(fontSize * 2, 0))) {
         std::string dirName = newName;
-        ProfileData *newProfile = creatingField->AddNewProfile(dirName);
+        ProfileData *newProfile = creatingField->CreateNewProfile(dirName);
         if (newProfile != nullptr) {
             shownProfile = newProfile;
             isShowDetailProfile = TRUE;
@@ -70,7 +68,6 @@ void ProfileWindow::ShortcutList(FieldsClass &field)
 {
     static int columns_count = 3;
     ImGuiIO& io = ImGui::GetIO();
-    float fontSize = ImGui::GetFontSize();
 
     if (!field.isSearchingField) {
         ImGui::BeginDisabled(isProEdit == ImGuiInputTextFlags_None);
@@ -120,40 +117,38 @@ void ProfileWindow::ShortcutList(FieldsClass &field)
 
 void ProfileWindow::ShowContactInfoTab() 
 {
-    float fontSize = ImGui::GetFontSize();
-
     ImGui::Text("手机:");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("phonenum");
-    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
+    ImGui::SetNextItemWidth(fontSize * 8);
     ImGui::InputText("", shownProfile->mPhone, 64, isProEdit);
     ImGui::PopID();
 
     ImGui::Text("微信:");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("wechat");
-    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
+    ImGui::SetNextItemWidth(fontSize * 8);
     ImGui::InputText("", shownProfile->mWechat, 128, isProEdit);
     ImGui::PopID();
 
     ImGui::Text("邮箱:");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("email");
-    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 16);
+    ImGui::SetNextItemWidth(fontSize * 16);
     ImGui::InputText("", shownProfile->mEmail, 64, isProEdit);
     ImGui::PopID();
 
     ImGui::Text("LinkedIn:");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("linkedin");
-    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 16);
+    ImGui::SetNextItemWidth(fontSize * 16);
     ImGui::InputText("", shownProfile->mLinkedin, 128, isProEdit);
     ImGui::PopID();
 
     ImGui::Text("其他链接");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("otherlink");
-    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 16);
+    ImGui::SetNextItemWidth(fontSize * 16);
     ImGui::InputText("", shownProfile->mOtherLink, 128, isProEdit);
     ImGui::PopID();
 }
@@ -161,8 +156,6 @@ void ProfileWindow::ShowContactInfoTab()
 
 void ProfileWindow::ShowBasicInfoTab()
 {
-    float fontSize = ImGui::GetFontSize();
-
     /* Name */
     ImGui::Text("姓名:");
     ImGui::SameLine(fontSize * 5, 0);
@@ -197,7 +190,7 @@ void ProfileWindow::ShowBasicInfoTab()
     ImGui::Text("出生年份:");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("age");
-    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 4);
+    ImGui::SetNextItemWidth(fontSize * 4);
     ImGui::InputText("", shownProfile->mBirthDate, 128, isProEdit);
     ImGui::PopID();
 
@@ -205,7 +198,7 @@ void ProfileWindow::ShowBasicInfoTab()
     ImGui::Text("工作地:");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("area");
-    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 4);
+    ImGui::SetNextItemWidth(fontSize * 4);
     ImGui::InputText("", shownProfile->mArea, 128, isProEdit);
     ImGui::PopID();
 
@@ -222,7 +215,7 @@ void ProfileWindow::ShowBasicInfoTab()
     ImGui::Text("学历:");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("diploma");
-    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 4);
+    ImGui::SetNextItemWidth(fontSize * 4);
     ImGui::InputText("", shownProfile->mDiploma, 32, isProEdit);
     ImGui::PopID();
 
@@ -231,14 +224,14 @@ void ProfileWindow::ShowBasicInfoTab()
     ImGui::Text("专业:");
     ImGui::SameLine(0, fontSize);
     ImGui::PushID("major");
-    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
+    ImGui::SetNextItemWidth(fontSize * 8);
     ImGui::InputText("", shownProfile->mMajor, 128, isProEdit);
     ImGui::PopID();
 
     ImGui::Text("毕业院校:");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("college");
-    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
+    ImGui::SetNextItemWidth(fontSize * 8);
     ImGui::InputText("", shownProfile->mCollege, 128, isProEdit);
     ImGui::PopID();
 
@@ -246,7 +239,7 @@ void ProfileWindow::ShowBasicInfoTab()
     ImGui::Text("毕业时间:");
     ImGui::SameLine(0, fontSize);
     ImGui::PushID("graddate");
-    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 4);
+    ImGui::SetNextItemWidth(fontSize * 4);
     ImGui::InputText("", shownProfile->mGradDate, 32, isProEdit);
     ImGui::PopID();
 
@@ -258,12 +251,11 @@ void ProfileWindow::ShowComLog()
 {
     ImGui::Text("沟通记录:");
     ImGui::InputTextMultiline("communication", shownProfile->mLog, 2048,
-        ImVec2(-FLT_MIN, ImGui::GetFontSize() * 16), isProEdit);
+        ImVec2(-FLT_MIN, fontSize * 16), isProEdit);
 }
 
 void ProfileWindow::ShowFileBrowser()
 {
-    float fontSize = ImGui::GetFontSize();
     ImGui::NewLine();
     if(ImGui::Button("打开文件夹", ImVec2(fontSize * 5, 0))) {
         shownProfile->OpenProfileDir();
@@ -295,8 +287,6 @@ void ProfileWindow::ShowFileBrowser()
 void ProfileWindow::ShowDetailProfile()
 {
     ImGui::Begin( "简历详情", &isShowDetailProfile);
-
-    float fontSize = ImGui::GetFontSize();
     if(isProEdit == ImGuiInputTextFlags_ReadOnly) {
         if(ImGui::Button("编辑", ImVec2(fontSize * 4, 0))) {
             isProEdit = ImGuiInputTextFlags_None;
@@ -385,7 +375,7 @@ void ProfileWindow::Draw()
     style.ItemSpacing = ImVec2(6, 10);
     style.FrameRounding = 4.0f;
     style.WindowPadding = ImVec2(10, 15);
-    float fontSize = ImGui::GetFontSize();
+    fontSize = ImGui::GetFontSize();
 
     ImGui::Begin( "简历列表", nullptr, ImGuiWindowFlags_NoCollapse);
     ImGui::PushID("搜索条");
@@ -394,7 +384,6 @@ void ProfileWindow::Draw()
     ImGui::SameLine(0, fontSize);
     bool isClicked = false;
     if (ImGui::Button("搜索", ImVec2(fontSize * 4, 0))) {
-        // TODO searching
         DoSearch(searchingField, fields, searchInput);
         isClicked = true;
     };

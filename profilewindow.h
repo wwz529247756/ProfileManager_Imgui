@@ -20,6 +20,7 @@ private:
     char newName[128] = {0};
     char searchInput[128] = {0};
     int needToShowResult = ImGuiTabItemFlags_None;
+    float fontSize = 0;
 
     void ShortcutList(FieldsClass &field);
     void ShowDetailProfile();
