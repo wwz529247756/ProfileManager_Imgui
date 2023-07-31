@@ -4,6 +4,7 @@
 #include <fstream>
 #include <filesystem>
 #include <windows.h>
+#include <io.h>
 
 namespace fs = std::filesystem;
 
@@ -141,5 +142,13 @@ void ProfileData::SaveData()
         writeFile << it.first << ":" << it.second << "\n";
     }
     writeFile.close();
+}
+
+bool ProfileData::IsExist()
+{
+    if (!fs::is_directory(fs::u8path(proDirPath))) {
+        return false;
+    }
+    return true;
 }
 

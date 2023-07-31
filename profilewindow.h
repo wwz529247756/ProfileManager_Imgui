@@ -30,6 +30,7 @@ private:
     void ShowFileBrowser();
     void ShowAddNewProfile();
     void ShowSearchingTab();
+    void RefreshFields();
 
 public:
     ProfileWindow();

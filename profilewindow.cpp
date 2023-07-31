@@ -42,21 +42,21 @@ void ProfileWindow::ShowAddNewProfile()
     ImGui::SetNextItemWidth(fontSize * 8);
     ImGui::InputText("", newName, 128);
     ImGui::PopID();
-    static bool isShowErroMsg = FALSE;
+    static bool isShowErroMsg = false;
     if (ImGui::Button("确认", ImVec2(fontSize * 2, 0))) {
         std::string dirName = newName;
         ProfileData *newProfile = creatingField->CreateNewProfile(dirName);
         if (newProfile != nullptr) {
             shownProfile = newProfile;
-            isShowDetailProfile = TRUE;
-            isShowCreateProfile = FALSE;
+            isShowDetailProfile = true;
+            isShowCreateProfile = false;
         } else {
-            isShowErroMsg = TRUE;
+            isShowErroMsg = true;
         }
     }
     ImGui::SameLine(0, fontSize);
     if (ImGui::Button("取消", ImVec2(fontSize * 2, 0))) {
-        isShowCreateProfile = FALSE;
+        isShowCreateProfile = false;
     }
     if (isShowErroMsg) {
         ImGui::TextDisabled("请检查候选人姓名是否重复！");
@@ -73,11 +73,11 @@ void ProfileWindow::ShortcutList(FieldsClass &field)
         ImGui::BeginDisabled(isProEdit == ImGuiInputTextFlags_None);
         if (ImGui::Button("新建", ImVec2(fontSize * 3, 0))) {
             memset(newName, 0, sizeof(newName));
-            isShowCreateProfile = TRUE;
+            isShowCreateProfile = true;
             creatingField = &field;
         }
         ImGui::EndDisabled();
-        ImGui::SameLine(0,fontSize * 2);
+        ImGui::SameLine(0,fontSize * 1);
     }
 
     ImGui::SetNextItemWidth(fontSize * 4);
@@ -90,7 +90,7 @@ void ProfileWindow::ShortcutList(FieldsClass &field)
     ImGui::Combo("文字缩放", &itemIndx, items, IM_ARRAYSIZE(items));
     io.FontGlobalScale = 1.0f + 0.05f * (float)(itemIndx - FONT_SCALE_100);
 
-    ImGui::Columns(columns_count, NULL, TRUE);
+    ImGui::Columns(columns_count, NULL, true);
     for (auto it : field.profileList)
     {
         if(ImGui::GetColumnIndex() == 0) {
@@ -104,7 +104,7 @@ void ProfileWindow::ShortcutList(FieldsClass &field)
         ImGui::PushID(it->mName);
         ImGui::BeginDisabled(isProEdit == ImGuiInputTextFlags_None);
         if(ImGui::Button("详情", ImVec2(-FLT_MIN, 0.0f))) {
-            isShowDetailProfile = TRUE;
+            isShowDetailProfile = true;
             shownProfile = it;
         }
         ImGui::EndDisabled();
@@ -387,6 +387,12 @@ void ProfileWindow::Draw()
         DoSearch(searchingField, fields, searchInput);
         isClicked = true;
     };
+    ImGui::SameLine(0, fontSize);
+
+    if (ImGui::Button("刷新", ImVec2(fontSize * 4, 0))) {
+        RefreshFields();
+    }
+    
 
     ImGui::BeginTabBar("FieldsTab");
     for (auto it : fields) {
@@ -414,5 +420,14 @@ void ProfileWindow::Draw()
         shownProfile->SaveData();
     }
 
+}
+
+void ProfileWindow::RefreshFields()
+{
+    for (auto &it : fields) {
+        it->Refresh();
+    }
+    searchingField.Refresh();
+    isShowDetailProfile = false;
 }
 

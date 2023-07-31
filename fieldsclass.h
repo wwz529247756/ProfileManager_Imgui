@@ -19,5 +19,6 @@ public:
     std::string GetName() {
         return fieldsName;
     };
+    void Refresh();
 
 };

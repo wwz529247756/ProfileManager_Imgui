@@ -22,6 +22,7 @@ public:
     void LoadFileList();
     void OpenFile(int fileIdx);
     void OpenProfileDir();
+    bool IsExist();
 
     int GetStatus() {
         return flowStatus;

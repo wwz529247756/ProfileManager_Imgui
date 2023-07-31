@@ -4,6 +4,7 @@
 #include <io.h>
 #include <filesystem>
 #include <fstream>
+#include <algorithm>
 
 namespace fs = std::filesystem;
 
@@ -39,4 +40,14 @@ ProfileData *FieldsClass::CreateNewProfile(std::string &dirName)
     proData->LoadData();
 
     return proData;
+}
+
+void FieldsClass::Refresh()
+{
+    for (int i = 0; i < profileList.size(); i++) {
+        if(!profileList[i]->IsExist()) {
+            profileList.erase(profileList.begin() + i);
+            i--;
+        }
+    }
 }
