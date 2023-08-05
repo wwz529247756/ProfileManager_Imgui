@@ -8,9 +8,7 @@ class ProfileData
 private:
     std::string proDirPath;
     const char *infoFileName = "/candidate.info";
-    std::map<std::string, char*> dataMap;
     int flowStatus = 0;
-
     std::string EncodeMultiText(char *multiText);
     void DecodeMultiText(std::string &multiText);
     
@@ -34,6 +32,7 @@ public:
         mStatus[1] = '\0';
     }
 
+    std::map<std::string, char*> dataMap;
     char mName[128] = {0};
     char mBirthDate[32] = {0};
     char mArea[128] = {0};

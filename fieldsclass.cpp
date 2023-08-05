@@ -23,6 +23,7 @@ FieldsClass::FieldsClass(std::string name) : fieldsName(name)
             profileList.push_back(proData);
         }
     }
+    this->sort();
 }
 
 ProfileData *FieldsClass::CreateNewProfile(std::string &dirName)
@@ -38,6 +39,7 @@ ProfileData *FieldsClass::CreateNewProfile(std::string &dirName)
     proData->SaveData();
     profileList.push_back(proData);
     proData->LoadData();
+    this->sort();
 
     return proData;
 }
@@ -50,4 +52,43 @@ void FieldsClass::Refresh()
             i--;
         }
     }
+}
+
+void FieldsClass::ExportToExcel(std::ofstream &oFile)
+{
+    const char* status[] = {
+        "已入职", "促报道", "Offer审批中",
+        "面试中", "交流中", "待建联", 
+        "暂缓", "终止"
+    };
+	
+    for (auto &it : profileList) {
+        oFile << "\"" << fieldsName << "\"" << ",";
+        oFile << "\"" << it->mName << "\"" << ",";
+        oFile << "\"" << status[atoi(it->mStatus)] << "\"" << ",";
+        oFile << "\"" << it->mPreGrade << "\"" << ",";
+        oFile << "\"" << it->mBirthDate << "\"" << ",";
+        oFile << "\"" << it->mArea << "\"" << ",";
+        oFile << "\"" << it->mCompany << "\"" << ",";
+        oFile << "\"" << it->mExperience << "\"" << ",";
+        oFile << "\"" << it->mCollege << "\"" << ",";
+        oFile << "\"" << it->mDiploma << "\"" << ",";
+        oFile << "\"" << it->mMajor << "\"" << ",";
+        oFile << "\"" << it->mGradDate << "\"" << ",";
+        oFile << "\"" << it->mEmail << "\"" << ",";
+        oFile << "\"" << it->mPhone << "\"" << ",";
+        oFile << "\"" << it->mLinkedin << "\"" << ",";
+        oFile << "\"" << it->mOtherLink << "\"" << ",";
+        oFile << "\"" << it->mLog << "\"" << std::endl;
+    }
+}
+
+bool CmpFunc(ProfileData *p1, ProfileData *p2)
+{
+    return p1->GetStatus() < p2->GetStatus();
+}
+
+void FieldsClass::sort()
+{
+    std::sort(profileList.begin(), profileList.end(), CmpFunc);
 }

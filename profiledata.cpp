@@ -62,7 +62,7 @@ void ProfileData::LoadData()
 
     if (strlen(dataMap["status"]) > 0 ) {
         int tmpStatus = atoi(dataMap["status"]);
-        if (tmpStatus >= 0 && tmpStatus < 6) {
+        if (tmpStatus >= 0 && tmpStatus < 8) {
             flowStatus = tmpStatus;
             return;
         }

@@ -20,5 +20,7 @@ public:
         return fieldsName;
     };
     void Refresh();
+    void ExportToExcel(std::ofstream &oFile);
+    void sort();
 
 };

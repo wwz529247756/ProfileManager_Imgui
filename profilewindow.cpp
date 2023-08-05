@@ -5,10 +5,23 @@
 #include <iostream>
 #include <io.h>
 #include <filesystem>
+#include <fstream>
 
 #define    FONT_SCALE_100     4
 
 namespace fs = std::filesystem;
+
+const static char* g_status[] = {"已入职", "促报道", "Offer审批中", "面试中", "交流中", "待建联", "暂缓", "终止"};
+const static ImU32 g_statusCol[] = {
+    IM_COL32(0, 100, 0, 255), // 入职
+    IM_COL32(46, 139, 87, 255), // 促报道
+    IM_COL32(152, 251, 152, 255), // Offer 审批
+    IM_COL32(162, 205, 90, 255), // 面试中
+    IM_COL32(173, 216, 230, 255), // 交流中
+    IM_COL32(255, 248, 220, 255), // 待建联
+    IM_COL32(255, 255, 0, 255), // 暂缓
+    IM_COL32(178, 34, 34, 255), // 促报道
+};
 
 ProfileWindow::ProfileWindow()
 {
@@ -99,6 +112,10 @@ void ProfileWindow::ShortcutList(FieldsClass &field)
         ImGui::PushFont(titleFont);
         ImGui::Text("%s", it->mName);
         ImGui::PopFont();
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Text, g_statusCol[it->GetStatus()]);
+        ImGui::Text("[%s]", g_status[it->GetStatus()]);
+        ImGui::PopStyleColor();
         ImGui::Text("出生: %s", it->mBirthDate);
         ImGui::Text("地域: %s", it->mArea);
         ImGui::PushID(it->mName);
@@ -272,14 +289,17 @@ void ProfileWindow::ShowFileBrowser()
     for (int i = 0; i < shownProfile->fileList.size(); i++) {
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
-        ImGui::TextUnformatted(shownProfile->fileList[i].c_str());
-        ImGui::SameLine(fontSize * 20, 0);
+        
+        ImGui::Dummy(ImVec2(fontSize, 0));
+        ImGui::SameLine(0, 0);
         ImGui::PushID(i);
-        if(ImGui::Button("打开")) {
-            std::cout << "clicked index " << i << std::endl;
+        if(ImGui::Button("打开", ImVec2(fontSize * 3, 0))) {
             shownProfile->OpenFile(i);
         }
         ImGui::PopID();
+        ImGui::SameLine(0, fontSize);
+        ImGui::TextUnformatted(shownProfile->fileList[i].c_str());
+        
     }
     ImGui::EndTable();
 }
@@ -300,6 +320,9 @@ void ProfileWindow::ShowDetailProfile()
         if(ImGui::Button("保存", ImVec2(fontSize * 4, 0))) {
             isProEdit = ImGuiInputTextFlags_ReadOnly;
             shownProfile->SaveData();
+            for (auto &it : fields) {
+                it->sort();
+            }
         };
 
         ImGui::SameLine(0, fontSize);
@@ -318,9 +341,9 @@ void ProfileWindow::ShowDetailProfile()
     ImGui::SameLine(0, fontSize * 5);
     ImGui::SetNextItemWidth(fontSize * 6);
     ImGui::BeginDisabled(isProEdit == ImGuiInputTextFlags_ReadOnly);
-    const char* items[] = {"待建联", "交流中", "面试中", "Offer审批中", "暂缓", "终止"};
+    
     int statusIdx = shownProfile->GetStatus();
-    if(ImGui::Combo(" ", &statusIdx, items, IM_ARRAYSIZE(items))) {
+    if(ImGui::Combo(" ", &statusIdx, g_status, IM_ARRAYSIZE(g_status))) {
         shownProfile->SetStatus(statusIdx);
     }
     ImGui::EndDisabled();
@@ -368,6 +391,53 @@ void DoSearch(FieldsClass &searchField, std::vector<FieldsClass*> &fields, char 
     }
 }
 
+static const char *g_csvTag[] = {
+    "领域",
+    "姓名",
+    "状态",
+    "预估职级",
+    "出生年份",
+    "地域",
+    "公司",
+    "经历简介",
+    "毕业院校",
+    "学历",
+    "专业",
+    "毕业时间",
+    "邮箱",
+    "手机",
+    "Linkedin链接",
+    "其他链接",
+    "沟通记录",
+};
+
+void ExportCSV(std::vector<FieldsClass*> &fields)
+{
+    std::ofstream oFile;
+    oFile.open("./export.csv", std::ios::out | std::ios::trunc);
+
+    for (int i = 0; i < sizeof(g_csvTag) / sizeof(char*); i++) {
+        oFile << g_csvTag[i] << ",";
+    }
+    oFile << std::endl;
+
+    for (auto &it : fields) {
+        it->ExportToExcel(oFile);
+    }
+    oFile.close();
+}
+
+void OpenProfileDir(std::string dirPath)
+{
+    for (int i = 0; i < dirPath.length(); i++ ) {
+        if (dirPath[i] == '/') {
+            dirPath[i] = '\\';
+            dirPath.insert(i + 1, 1, '\\');
+        }
+    }
+    ShellExecuteW(0, L"open", fs::u8path(dirPath).wstring().c_str(), L"", L"", SW_SHOWNORMAL);
+}
+
 void ProfileWindow::Draw()
 {
     ImGuiStyle &style = ImGui::GetStyle();
@@ -377,7 +447,24 @@ void ProfileWindow::Draw()
     style.WindowPadding = ImVec2(10, 15);
     fontSize = ImGui::GetFontSize();
 
-    ImGui::Begin( "简历列表", nullptr, ImGuiWindowFlags_NoCollapse);
+
+    ImGui::Begin( "简历列表", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar);
+
+    if (ImGui::BeginMenuBar())
+    {
+        if (ImGui::BeginMenu("文件"))
+        {
+            if(ImGui::MenuItem("导出Excel")) {
+                ExportCSV(fields);
+            }
+            if (ImGui::MenuItem("打开文件夹")) {
+                OpenProfileDir(PROFILE_PATH);
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
+
     ImGui::PushID("搜索条");
     ImGui::InputText("", searchInput, 128);
     ImGui::PopID();
@@ -392,7 +479,9 @@ void ProfileWindow::Draw()
     if (ImGui::Button("刷新", ImVec2(fontSize * 4, 0))) {
         RefreshFields();
     }
-    
+
+    ImGui::Separator();
+    ImGui::NewLine();
 
     ImGui::BeginTabBar("FieldsTab");
     for (auto it : fields) {
