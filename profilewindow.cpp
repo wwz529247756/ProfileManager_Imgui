@@ -114,10 +114,14 @@ void ProfileWindow::ShortcutList(FieldsClass &field)
         ImGui::PopFont();
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_Text, g_statusCol[it->GetStatus()]);
-        ImGui::Text("[%s]", g_status[it->GetStatus()]);
+        ImGui::Text(" [%s]", g_status[it->GetStatus()]);
         ImGui::PopStyleColor();
-        ImGui::Text("出生: %s", it->mBirthDate);
-        ImGui::Text("地域: %s", it->mArea);
+        ImGui::Text("出生 : %s", it->mBirthDate);
+        ImGui::SameLine(0, fontSize * 3);
+        ImGui::Text("预估职级 : %s", it->mPreGrade);
+        ImGui::Text("地域 : %s", it->mArea);
+        ImGui::SameLine(0, fontSize * 3);
+        ImGui::Text("公司 : %s", it->mCompany);
         ImGui::PushID(it->mName);
         ImGui::BeginDisabled(isProEdit == ImGuiInputTextFlags_None);
         if(ImGui::Button("详情", ImVec2(-FLT_MIN, 0.0f))) {

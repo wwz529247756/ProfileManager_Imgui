@@ -46,8 +46,8 @@ bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_wid
 
 int main( int argc, char** argv )
 {
-    // HWND hWnd = GetConsoleWindow();
-    // ShowWindow(hWnd, SW_HIDE);
+    HWND hWnd = GetConsoleWindow();
+    ShowWindow(hWnd, SW_HIDE);
 
     if ( !glfwInit() )
         return 1;
