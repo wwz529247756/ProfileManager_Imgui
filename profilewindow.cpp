@@ -162,14 +162,14 @@ void ProfileWindow::ShowContactInfoTab()
     ImGui::Text("LinkedIn:");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("linkedin");
-    ImGui::SetNextItemWidth(fontSize * 16);
+    ImGui::SetNextItemWidth(fontSize * 24);
     ImGui::InputText("", shownProfile->mLinkedin, 128, isProEdit);
     ImGui::PopID();
 
     ImGui::Text("其他链接");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("otherlink");
-    ImGui::SetNextItemWidth(fontSize * 16);
+    ImGui::SetNextItemWidth(fontSize * 24);
     ImGui::InputText("", shownProfile->mOtherLink, 128, isProEdit);
     ImGui::PopID();
 }
@@ -469,11 +469,15 @@ void ProfileWindow::Draw()
         ImGui::EndMenuBar();
     }
 
+    bool isClicked = false;
     ImGui::PushID("搜索条");
-    ImGui::InputText("", searchInput, 128);
+    if(ImGui::InputText("", searchInput, 128, ImGuiInputTextFlags_EnterReturnsTrue)) {
+        DoSearch(searchingField, fields, searchInput);
+        isClicked = true;
+    }
     ImGui::PopID();
     ImGui::SameLine(0, fontSize);
-    bool isClicked = false;
+    
     if (ImGui::Button("搜索", ImVec2(fontSize * 4, 0))) {
         DoSearch(searchingField, fields, searchInput);
         isClicked = true;
