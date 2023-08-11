@@ -89,7 +89,7 @@ int main( int argc, char** argv )
 
         ImGui::NewFrame();
         proWin.Draw();
-        ImGui::ShowDemoWindow();
+        // ImGui::ShowDemoWindow();
 
         //设置窗口位置
         ImGui::SetNextWindowPos(ImVec2(0,0), 0, ImVec2(0, 0));

@@ -37,14 +37,29 @@ list ( APPEND PRJ_SRC_LIST ${imgui_src_files} )
 list ( APPEND PRJ_LIBRARIES ${GLFW_LIB} )
 list ( APPEND PRJ_LIBRARIES ${OPENGL_LIBRARIES} )
 
+if(NOT CMAKE_RC_COMPILER)
+    set(CMAKE_RC_COMPILER windres.exe)
+endif()
+
+add_custom_command( OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/res.obj
+    COMMAND ${CMAKE_RC_COMPILER}
+    -D GCC_WINDRES
+    -I ${CMAKE_CURRENT_SOURCE_DIR}
+    -I ${CMAKE_CURRENT_BINARY_DIR}
+    -o ${CMAKE_CURRENT_BINARY_DIR}/res.obj
+    -i ${CMAKE_CURRENT_SOURCE_DIR}/res.rc
+)
+
+list(APPEND PRJ_SRC_LIST ${CMAKE_CURRENT_BINARY_DIR}/res.obj)
+
 add_executable ( ${PROJECT_NAME} ${PRJ_SRC_LIST} ${PRJ_INC_LIST} )
 
 target_include_directories ( ${PROJECT_NAME}
-	PRIVATE 
-        ${PRJ_INCLUDE_DIRS}
+    PRIVATE 
+    ${PRJ_INCLUDE_DIRS}
 )
 
 target_link_libraries ( ${PROJECT_NAME} 
     PRIVATE 
-        ${PRJ_LIBRARIES}
+    ${PRJ_LIBRARIES}
 )

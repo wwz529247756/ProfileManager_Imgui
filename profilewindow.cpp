@@ -48,7 +48,8 @@ ProfileWindow::ProfileWindow()
 
 void ProfileWindow::ShowAddNewProfile()
 {
-    ImGui::Begin("新建简历", nullptr, ImGuiWindowFlags_NoCollapse);
+    ImGui::SetNextWindowSize(ImVec2(fontSize * 17, fontSize * 8));
+    ImGui::Begin("新建简历", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
     ImGui::Text("请输入候选人姓名:");
     ImGui::SameLine(0, fontSize);
     ImGui::PushID("newprofile");
@@ -56,20 +57,24 @@ void ProfileWindow::ShowAddNewProfile()
     ImGui::InputText("", newName, 128);
     ImGui::PopID();
     static bool isShowErroMsg = false;
-    if (ImGui::Button("确认", ImVec2(fontSize * 2, 0))) {
+    ImGui::Dummy(ImVec2(fontSize * 4, 0));
+    ImGui::SameLine(0, 0);
+    if (ImGui::Button("确认", ImVec2(fontSize * 3, 0))) {
         std::string dirName = newName;
         ProfileData *newProfile = creatingField->CreateNewProfile(dirName);
         if (newProfile != nullptr) {
             shownProfile = newProfile;
             isShowDetailProfile = true;
             isShowCreateProfile = false;
+            isShowErroMsg = true;
         } else {
             isShowErroMsg = true;
         }
     }
-    ImGui::SameLine(0, fontSize);
-    if (ImGui::Button("取消", ImVec2(fontSize * 2, 0))) {
+    ImGui::SameLine(0, fontSize * 2);
+    if (ImGui::Button("取消", ImVec2(fontSize * 3, 0))) {
         isShowCreateProfile = false;
+        isShowErroMsg = false;
     }
     if (isShowErroMsg) {
         ImGui::TextDisabled("请检查候选人姓名是否重复！");
@@ -117,10 +122,10 @@ void ProfileWindow::ShortcutList(FieldsClass &field)
         ImGui::Text(" [%s]", g_status[it->GetStatus()]);
         ImGui::PopStyleColor();
         ImGui::Text("出生 : %s", it->mBirthDate);
-        ImGui::SameLine(0, fontSize * 3);
-        ImGui::Text("预估职级 : %s", it->mPreGrade);
+        ImGui::SameLine(fontSize * 7, 0);
         ImGui::Text("地域 : %s", it->mArea);
-        ImGui::SameLine(0, fontSize * 3);
+        ImGui::Text("职级 : %s", it->mPreGrade);
+        ImGui::SameLine(fontSize * 7, 0);
         ImGui::Text("公司 : %s", it->mCompany);
         ImGui::PushID(it->mName);
         ImGui::BeginDisabled(isProEdit == ImGuiInputTextFlags_None);
@@ -138,33 +143,43 @@ void ProfileWindow::ShortcutList(FieldsClass &field)
 
 void ProfileWindow::ShowContactInfoTab() 
 {
-    ImGui::Text("手机:");
+    ImGui::Dummy(ImVec2(0, fontSize / 8));
+
+    ImGui::Text("手机");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("phonenum");
     ImGui::SetNextItemWidth(fontSize * 8);
     ImGui::InputText("", shownProfile->mPhone, 64, isProEdit);
     ImGui::PopID();
 
-    ImGui::Text("微信:");
+    ImGui::Dummy(ImVec2(0, fontSize / 8));
+
+    ImGui::Text("微信");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("wechat");
     ImGui::SetNextItemWidth(fontSize * 8);
     ImGui::InputText("", shownProfile->mWechat, 128, isProEdit);
     ImGui::PopID();
 
-    ImGui::Text("邮箱:");
+    ImGui::Dummy(ImVec2(0, fontSize / 8));
+
+    ImGui::Text("邮箱");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("email");
     ImGui::SetNextItemWidth(fontSize * 16);
     ImGui::InputText("", shownProfile->mEmail, 64, isProEdit);
     ImGui::PopID();
 
-    ImGui::Text("LinkedIn:");
+    ImGui::Dummy(ImVec2(0, fontSize / 8));
+
+    ImGui::Text("LinkedIn");
     ImGui::SameLine(fontSize * 5, 0);
     ImGui::PushID("linkedin");
     ImGui::SetNextItemWidth(fontSize * 24);
     ImGui::InputText("", shownProfile->mLinkedin, 128, isProEdit);
     ImGui::PopID();
+
+    ImGui::Dummy(ImVec2(0, fontSize / 8));
 
     ImGui::Text("其他链接");
     ImGui::SameLine(fontSize * 5, 0);
@@ -265,7 +280,7 @@ void ProfileWindow::ShowBasicInfoTab()
     ImGui::PopID();
 
     ImGui::Text("经历:");
-    ImGui::InputTextMultiline("experience", shownProfile->mExperience, 2048, ImVec2(-FLT_MIN, fontSize * 8), isProEdit);
+    ImGui::InputTextMultiline("experience", shownProfile->mExperience, 2048, ImVec2(-FLT_MIN, fontSize * 14), isProEdit);
 }
 
 void ProfileWindow::ShowComLog()
@@ -277,7 +292,7 @@ void ProfileWindow::ShowComLog()
 
 void ProfileWindow::ShowFileBrowser()
 {
-    ImGui::NewLine();
+    ImGui::Dummy(ImVec2(0, fontSize / 8));
     if(ImGui::Button("打开文件夹", ImVec2(fontSize * 5, 0))) {
         shownProfile->OpenProfileDir();
     }
@@ -285,6 +300,7 @@ void ProfileWindow::ShowFileBrowser()
     if(ImGui::Button("刷新", ImVec2(fontSize * 4, 0))) {
         shownProfile->LoadFileList();
     }
+    ImGui::Dummy(ImVec2(0, fontSize / 16));
     
     ImGui::BeginTable("FileBrowser", 1,
         ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_BordersOuterV);
